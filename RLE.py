@@ -11,10 +11,16 @@ class Encoder:
 
     @property
     def start(self):
+        text_encoded = ""
         with open(self.filename_read, 'r') as rd:
             text_to_encode = rd.read()
             print(text_to_encode)
-        text_encoded = "".join(format(ord(char), "08b") for char in text_to_encode)
+        for char in text_to_encode:
+            encoded_char = format(ord(char), "08b")
+            if len(encoded_char) != 8:
+                print(f"Wrong character: '{char}', omitting...")
+            else:
+                text_encoded += encoded_char
         with open(self.filename_write, 'w') as wt:
             wt.write(text_encoded)
 
@@ -28,12 +34,27 @@ class Decoder:
         if filename_write is None:
             self.filename_write = filename_read
             if ".rle" in filename_read:
-                ask = input("There is '.rle' in file name, remove it? (Y/N):\n>>> ")
-                if ask == "Y":
+                ask = input("[!] There is '.rle' in file name, remove it? (N(/Y/RENAME)):\n>>> ")
+                if ask.upper() == "Y":
                     self.filename_write = self.filename_write[:-3]
+                elif ask.upper() == "RENAME":
+                    self.rename
+            else:
+                ask = input(f"[!] There is no file name to write, use {self.filename_write}? (Y(/RENAME))")
+                if ask.upper() == "RENAME":
+                    self.rename
         else:
             self.filename_write = filename_write
         self.start
+
+    @property
+    def rename(self):
+        ask = input("[ ] Write new file name:\n>>> ")
+        confirm = input(f"You typed: {ask}\nConfrim? (Y/N)\n>>> ")
+        while confirm.upper() != "Y":
+            ask = input("[ ] Write new file name:\n>>> ")
+            confirm = input(f"You typed: {ask}\nConfrim? (Y/N)\n>>> ")
+        self.filename_write = ask
 
     @property
     def start(self):
