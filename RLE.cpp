@@ -41,6 +41,8 @@ class RLE
                     {
                         count++;
                         i++;
+                        // if (count >= 2^7-1)
+                        //     break;
                     }
                     // cout << count << "\n";
                     // cout << bitset<1>(1) << bitset<7>(count) << "\n";
@@ -85,19 +87,15 @@ class RLE
                 return 1;
             }
 
-            ofstream fw(filename_write);
-            if (!fw.is_open())
-            {
-                cerr << "Error opening the file!\n";
-                return 1;
-            }
-
             vector<unsigned char> buffer(istreambuf_iterator<char>(fr), {});
+            fr.close();
 
             unsigned char character;
             unsigned long integer = 0;
+            string main_text = "";
             string text = "";
-            for (int j = 0; j < size(buffer); j = j + 8)
+            int j;
+            for (j = 0; j < size(buffer)-7; j = j + 8)
             {
                 vector<unsigned char> slice(buffer.begin() + j, buffer.begin() + j + 8);
                 string s = "";
@@ -105,8 +103,8 @@ class RLE
                 {
                     for (unsigned long k = 0; k < integer; k++)
                     {
-                        // cout << text;
-                        fw << text;
+                        cout << text;
+                        main_text = main_text + text;
                     }
                     integer = 0;
                     text = "";
@@ -134,20 +132,44 @@ class RLE
                     }
                 }
             }
-            if (integer != 0)
+            cout << "\n" << j << " " << size(buffer) << "\n";
+            if (j != size(buffer))
             {
-                for (unsigned long k = 0; k < integer; k++)
+                cout << "[!] Something wrong after col (Seems like not full byte) " << j << "\n[?] Change with skipping it? [N(/Y))]\n>>> ";
+                string ask;
+                cin >> ask;
+                if (ask != "Y")
                 {
-                    // cout << text;
-                    fw << text;
+                    main_text = "";
                 }
-                integer = 0;
-                text = "";
             }
-            
+            else
+            {
+                if (integer != 0)
+                {
+                    for (unsigned long k = 0; k < integer; k++)
+                    {
+                        cout << text;
+                        main_text = main_text + text;
+                    }
+                    integer = 0;
+                    text = "";
+                }
+            }
 
-            fr.close();
-            fw.close();
+            if (main_text != "")
+            {
+                ofstream fw(filename_write, ios::binary);
+                if (!fw.is_open())
+                {
+                    cerr << "Error opening the file!\n";
+                    return 1;
+                }
+
+                fw << main_text;
+                fw.close();
+            }
+
             return 0;
         };
 
