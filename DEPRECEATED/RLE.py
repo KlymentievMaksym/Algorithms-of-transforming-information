@@ -60,8 +60,9 @@ class Decoder:
     def start(self):
         with open(self.filename_read, 'r') as rd:
             text_to_decode = rd.read()
-            # print(text_to_decode)
-        list_of_chars = [text_to_decode[i:i+8] for i in range(0, len(text_to_decode), 8)]
+        for i in range(0, len(text_to_decode), 8):
+            char = text_to_decode[i:i+8]
+            list_of_chars = [char]
         text_decoded = "".join(chr(int(i, 2)) for i in list_of_chars)
         print(text_decoded)
         with open(self.filename_write, 'w') as wt:
@@ -69,3 +70,4 @@ class Decoder:
 
     def __str__(self):
         return f"Decoder from {self.filename_read} to {self.filename_write}"
+
