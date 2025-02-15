@@ -20,14 +20,14 @@ class RLE
             ifstream fr(filename_read);
             if (!fr.is_open())
             {
-                cerr << "Error opening the file!";
+                cerr << "Error opening the file!\n";
                 return 1;
             }
 
             ofstream fw(filename_write, ios::binary);
             if (!fw.is_open())
             {
-                cerr << "Error opening the file!";
+                cerr << "Error opening the file!\n";
                 return 1;
             }
 
@@ -41,7 +41,7 @@ class RLE
                     // cout << i << "\n";
                     // cout << bitset<8>(s[i]) << "\n";
                 }
-                fw << "\n";
+                fw << bitset<8>('\n');
             }   
             fr.close();
             fw.close();
@@ -50,49 +50,55 @@ class RLE
 
         int Decoder(string filename_read, string filename_write = "")
         {
-            // if (filename_write == "")
-            // {
-            //     auto it = next(filename_read.begin(), filename_read.find(".rle")); 
-            //     filename_write = filename_read;
-            //     filename_write.erase(it, next(it, 2));
-            //     filename_write = filename_write + "_COPY.txt";
-            // }
+            if (filename_write == "")
+            {
+                filename_write = filename_read;
+                filename_write.pop_back();
+                filename_write.pop_back();
+                filename_write.pop_back();
+                filename_write.pop_back();
+                // cout << filename_write << "\n";
+                // auto it = next(filename_read.begin(), filename_read.find(".rle"));
+                // filename_write = filename_read;
+                // filename_write.erase(it, next(it, 2));
+                // filename_write = filename_write + "_COPY.txt";
+            }
 
             ifstream fr(filename_read, ios::binary);
             if (!fr.is_open())
             {
-                cerr << "Error opening the file!";
+                cerr << "Error opening the file!\n";
                 return 1;
             }
 
-            // ofstream fw(filename_write);
-            // if (!fw.is_open())
-            // {
-            //     cerr << "Error opening the file!";
-            //     return 1;
-            // }
-
-            // char* s;
-            // fr.read(s, 8);
-            vector<unsigned char> buffer(std::istreambuf_iterator<char>(fr), {});
-
-            vector<unsigned char> slice(buffer.begin(), buffer.begin() + 8);
-            for (auto it : slice)
+            ofstream fw(filename_write);
+            if (!fw.is_open())
             {
-                cout << it;
+                cerr << "Error opening the file!\n";
+                return 1;
             }
-            // unsigned long i = slice.to_ulong(); 
-            // unsigned char c = static_cast<unsigned char>( i ); 
 
-            cout << "\n";
+            vector<unsigned char> buffer(istreambuf_iterator<char>(fr), {});
 
-            for (auto it : buffer)
+            for (int j = 0; j < size(buffer); j = j + 8)
             {
-                cout << it;
+                vector<unsigned char> slice(buffer.begin() + j, buffer.begin() + j + 8);
+                string s = "";
+                for (auto it : slice)
+                {
+                    s = s + static_cast<char>(it);
+                }
+                bitset<8> byt;
+                byt = static_cast<bitset<8>>(s);
+                unsigned long i = byt.to_ulong(); 
+                unsigned char c = static_cast<unsigned char>( i );
+                fw << c;
+                // cout << c;
             }
-            // cout << s << "\n";
+            
+
             fr.close();
-            // fw.close();
+            fw.close();
             return 0;
         };
 
@@ -103,14 +109,15 @@ int main(int argc, char* argv[])
 {
     RLE rle;
 
-    cout << "You have entered " << argc
-         << " arguments:" << endl;
+    // cout << "You have entered " << argc
+    //      << " arguments:" << endl;
 
-    for (int i = 0; i < argc; i++)
-    {
-        cout << "Argument " << i + 1 << ": " << argv[i]
-             << endl;
-    }
+    // for (int i = 0; i < argc; i++)
+    // {
+    //     cout << "Argument " << i + 1 << ": " << argv[i]
+    //          << endl;
+    // }
+
     while (true)
     {
         cout << "[?] What to do with it?\n1: Encode, 2: Decode, 0: Exit\n>>> ";
