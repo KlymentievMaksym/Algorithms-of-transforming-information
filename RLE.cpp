@@ -10,12 +10,17 @@ using namespace std;
 class RLE 
 {
     public:
+        // 1. Кодер повинен приймати на вхід ім'я файла для кодування та (опціонально) ім'я файла для зберігання закодованого результату.
         int Encoder(string filename_read, string filename_write = "")
         {
             if (filename_write == "")
             {
-                filename_write = filename_read + ".rle";
+                filename_write = filename_read;
+                size_t lastindex_dot = filename_write.find_last_of(".");
+                filename_write = filename_write.substr(0, lastindex_dot)  + ".rle";
             }
+            cout << filename_read << "\n";
+            cout << filename_write << "\n";
 
             ifstream fr(filename_read);
             if (!fr.is_open())
