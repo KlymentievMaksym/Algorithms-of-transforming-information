@@ -1,0 +1,5 @@
+\contentsline {section}{\numberline {1}Опис}{1}{}%
+\contentsline {section}{\numberline {2}Особливості}{1}{}%
+\contentsline {section}{\numberline {3}Кодування}{2}{}%
+\contentsline {section}{\numberline {4}Декодування}{2}{}%
+\contentsline {section}{\numberline {5}Декодування спотворених даних}{3}{}%
