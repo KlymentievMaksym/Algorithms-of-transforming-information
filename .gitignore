@@ -1,6 +1,7 @@
 *cache*
 .vs
 .vscode
+build
 
 *.aux
 *.fdb_latexmk

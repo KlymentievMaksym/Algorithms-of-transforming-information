@@ -3,8 +3,8 @@
 #include <bitset>
 #include <vector>
 
-#include <cstdint>
-// #include <windows.h>
+#include <cstdint> // uint8_t
+#include <sstream> // stringstream
 
 using namespace std;
 
@@ -31,83 +31,25 @@ class RLE
             cout << "[O] Output: '" << filename_write << "'\n";
 
             // 3. Вхідний файл повинен трактуватись як файл двійкових даних (потік байтів).
-            // streampos size;
-            // char * memblock;
-
-            ifstream fr(filename_read, ios::binary); //  | ios::ate
+            ifstream fr(filename_read, ios::binary);
             if (!fr.is_open())
             {
-                cerr << "[!] Error opening the file!\n";
+                cerr << "[!] Error opening the file '" << filename_read << "'!\n";
                 return 1;
             }
-            // size = fr.tellg();
-            // memblock = new char [size];
-            // fr.seekg(0, ios::beg);
-            // fr.read(memblock, size);
-            // fr.close();
-
-            // cout << "the entire file content is in memory\n";
-            // cout << memblock;
-
-            // vector<char> buffer(istreambuf_iterator<char>(fr), {});
 
             // 4. Стиснені дані повинні занисуватись у вихідний файл як у файл двійкових даних (потік байтів)        
             ofstream fw(filename_write, ios::binary);
             if (!fw.is_open())
             {
-                cerr << "Error opening the file!\n";
+                cerr << "[!] Error opening the file '" << filename_write << "'!\n";
                 return 1;
             }
 
-            // int char_count = 1;
-            // char buffer[1];
-            // // char buffer_i[1];
-
-            // float data[8] = {0.00001, 0.00002, 0.00003, 0.00004, 0.00005, 0.00006, 0.00007, 0.00008};
-
-            // for (int i=0; i < size; i++)
-            // {
-            //     buffer[0] = memblock[i];
-            //     while (memblock[i] == memblock[i+1])
-            //     {
-            //         i++;
-            //         char_count++;
-            //     }
-            //     // buffer_i[0] = char(char_count);
-            //     // cout << char_count;
-            //     char_count = 1;
-            //     // fw.write((char *) bitset<8>(char_count), 1);
-            //     if (i < 8)
-            //         fw.write((char*) &data[i], sizeof(float));
-            //     fw.write(buffer, 1);
-            //     cout << memblock[i];
-            // }
-            // cout << "\n";
-
-            // int char_count = 1;
-            
-            // for (int it = 0; it < size(buffer); it++)
-            // {
-            //     while (buffer[it] == buffer[it+1])
-            //         it++;
-            //         char_count++;
-            //     cout << buffer[it];
-            // }
-            // int a[4] = {100023, 23, 42, 13};
-            // fw.write((char*) &a, sizeof(a));
-
-
-            // uint8_t value = 255;  // 255 in one byte (0xFF)
-            // uint8_t value1 = 254;  // 255 in one byte (0xFF)
-            // uint8_t value2 = 253;  // 255 in one byte (0xFF)
-            // fw.write(reinterpret_cast<char*>(&value), sizeof(value));
-            // fw.write(reinterpret_cast<char*>(&value1), sizeof(value1));
-            // fw.write(reinterpret_cast<char*>(&value2), sizeof(value2));
             // Encode
             string s;
             while (getline(fr, s))
             {
-                // cout << "\nLine\n";
                 int count = 1;
                 for (int i = 0; i < size(s); i++)
                 {
@@ -115,34 +57,24 @@ class RLE
                     {
                         count++;
                         i++;
-                        // if (count >= 2^7-1)
-                        //     break;
+                        if (count >= 127)
+                        {
+                            break;
+                        }
                     }
                     uint8_t cont = (1 << 7) | count;
                     uint8_t si = s[i];
                     fw.write(reinterpret_cast<char*>(&cont), sizeof(cont));
                     fw.write(reinterpret_cast<char*>(&si), sizeof(si));
-                    // cout << count;
-                    // cout << count << "\n";
-                    // cout << bitset<1>(1) << bitset<7>(count) << "\n";
-                    // cout << s[i];
-                    // cout << s[i] << "\n";
-                    // cout << bitset<8>(s[i]) << "\n" << "\n";
-                    // fw << bitset<1>(1) << bitset<7>(count);
-                    // fw << bitset<8>(s[i]);
                     count = 1;
                 }
-                // cout << "\n";
                 uint8_t cont = (1 << 7) | count;
                 uint8_t si = '\n';
                 fw.write(reinterpret_cast<char*>(&cont), sizeof(cont));
                 fw.write(reinterpret_cast<char*>(&si), sizeof(si));
-                // fw << bitset<1>(1) << bitset<7>(count);
-                // fw << bitset<8>('\n');
             }   
 
             // 5. Кодер може вставляли у вихідний файл довільні необхідні йому метадані (наприклад, заголовки чи якісь службові команди, які ви передбачаєте своєю реалізацією)
-            // delete[] memblock;
             fr.close();
             fw.close();
             return 0;
@@ -167,7 +99,8 @@ class RLE
             {
                 filename_write = filename_read;
                 size_t lastindex_dot = filename_write.find_last_of(".");
-                filename_write = filename_write.substr(0, lastindex_dot)  + ".txt";
+                // filename_write = filename_write.substr(0, lastindex_dot)  + ".txt";
+                filename_write = filename_write.substr(0, lastindex_dot);
                 cout << "[I] Input: '" << filename_read << "'\n";
                 cout << "[O] Output: '" << filename_write << "'\n";
             }
@@ -176,12 +109,13 @@ class RLE
             ifstream fr(filename_read, ios::binary);
             if (!fr.is_open())
             {
-                cerr << "Error opening the file!\n";
+                cerr << "[!] Error opening the file '" << filename_read << "'!\n";
                 return 1;
             }
 
             // Decode
             string text = "";
+            string text_not_decoded = "";
             while (!fr.eof( ))
             {
                 uint8_t value;
@@ -198,114 +132,33 @@ class RLE
                         }
                     }
                 }
+                else if (bitset<8>(value)[7] == 0)
+                {
+                    text_not_decoded = text_not_decoded + static_cast<char>(value);
+                }
             }
             fr.close();
 
-            // cout << text;
+            // cout << text << "\n";
+            // cout << text_not_decoded << "\n";
             if (text != "")
             {
                 // 3. Файли входу та виходу повинні трактуватись як файли двійкових даних (потоки байтів)
                 ofstream fw(filename_write, ios::binary);
                 if (!fw.is_open())
                 {
-                    cerr << "Error opening the file!\n";
+                    cerr << "[!] Error opening the file '" << filename_write << "'!\n";
                     return 1;
                 }
 
                 fw << text;
                 fw.close();
             }
-            // cout << fr.tellg() << "\n";
-            // cout << value << "\n";
-            // cout << static_cast<int>(value)  << "\n";
-            // fr.read(reinterpret_cast<char*>(&value), sizeof(value));
-            // cout << static_cast<int>(value)  << "\n";
-            // fr.read(reinterpret_cast<char*>(&value), sizeof(value));
-            // cout << static_cast<int>(value)  << "\n";
-            // fr.read(reinterpret_cast<char*>(&value), sizeof(value));
-            // cout << static_cast<int>(value)  << "\n";
-            // vector<unsigned char> buffer(istreambuf_iterator<char>(fr), {});
-
-            // unsigned char character;
-            // unsigned long integer = 0;
-            // string main_text = "";
-            // string text = "";
-            // int j;
-            // for (j = 0; j < size(buffer)-7; j = j + 8)
-            // {
-            //     vector<unsigned char> slice(buffer.begin() + j, buffer.begin() + j + 8);
-            //     string s = "";
-            //     if (slice[0] == '1')
-            //     {
-            //         for (unsigned long k = 0; k < integer; k++)
-            //         {
-            //             cout << text;
-            //             main_text = main_text + text;
-            //         }
-            //         integer = 0;
-            //         text = "";
-            //         for (int i = 1; i < size(slice); i++)
-            //         {
-            //             s = s + static_cast<char>(slice[i]);
-            //         }
-            //         bitset<7> byt;
-            //         byt = static_cast<bitset<7>>(s);
-            //         integer = byt.to_ulong();
-            //     }
-            //     else
-            //     {
-            //         if (slice[0] == '0')
-            //         {
-            //             for (auto it : slice)
-            //             {
-            //                 s = s + static_cast<char>(it);
-            //             }
-            //             bitset<8> byt;
-            //             byt = static_cast<bitset<8>>(s);
-            //             unsigned long i = byt.to_ulong(); 
-            //             character = static_cast<unsigned char>( i );
-            //             text = text + static_cast<char>(character);
-            //         }
-            //     }
-            // }
-            // cout << "\n" << j << " " << size(buffer) << "\n";
-            // if (j != size(buffer))
-            // {
-            //     cout << "[!] Something wrong after col (Seems like not full byte) " << j << "\n[?] Change with skipping it? [N(/Y))]\n>>> ";
-            //     string ask;
-            //     cin >> ask;
-            //     if (ask != "Y")
-            //     {
-            //         main_text = "";
-            //     }
-            // }
-            // else
-            // {
-            //     if (integer != 0)
-            //     {
-            //         for (unsigned long k = 0; k < integer; k++)
-            //         {
-            //             cout << text;
-            //             main_text = main_text + text;
-            //         }
-            //         integer = 0;
-            //         text = "";
-            //     }
-            // }
-
-            // if (main_text != "")
-            // {
-            //     // 3. Файли входу та виходу повинні трактуватись як файли двійкових даних (потоки байтів)
-            //     ofstream fw(filename_write, ios::binary);
-            //     if (!fw.is_open())
-            //     {
-            //         cerr << "Error opening the file!\n";
-            //         return 1;
-            //     }
-
-            //     fw << main_text;
-            //     fw.close();
-            // }
+            else
+            {
+                cerr << "[!] There is no text which can be decoded\n";
+                return 2;
+            }
 
             // 4. Якщо ваша реалізація передбачає якісь метадані у стиснутому файлі, декодер повинен перевірити їх коректність та, у разі їх некоректності, вивести відповідне повідомлення про помилку.
             // 5. Якшо декодер виявив неправильну команду алгоритму стиснення у вхідному файлі (команда каже зчитати послідовність байтів, яка виходить за кінець файлу), декодер повинен вивести відповідне повідомлення про помилку.
@@ -320,43 +173,133 @@ int main(int argc, char* argv[])
 {
     RLE rle;
 
-    // cout << "You have entered " << argc
-    //      << " arguments:" << endl;
-
     for (int i = 1; i < argc; i++)
     {
-        cout << "File " << i << ": " << argv[i]
+        cout << "[ ] Argument " << i << ": " << argv[i]
              << endl;
     }
 
     while (true)
     {
         cout << "\n[?] What to do with it?\n1: Encode, 2: Decode, 0: Exit\n>>> ";
-        string ask;
-        cin >> ask;
-        // cout << ask << "\n";
+        string ask, subask;
 
-        if (ask == "0")
+        getline(cin, ask);
+        if (size(ask) == 0)
+            continue;
+        stringstream ss(ask);
+        vector<string> v;
+        while (getline(ss, ask, ' '))
+        {
+            v.push_back(ask);
+        }
+
+        if(size(v[0]) > 1)
+        {
+            cout << "[!] There is no " << v[0] << " command\n";
+        }
+
+        if (v[0] == "0")
         {
             return 0;
         }
-        else if (ask == "1")
+        else if (v[0] == "1")
         {
-            for (int i = 1; i < argc; i++)
+            if (argc > 1)
             {
-                rle.Encoder(argv[i]);
+                cout << "[?] There is " << argc - 1 << " arguments\nWant to use them? (N(/Y))\n>>> ";
+                getline(cin, subask);
+                if (subask == "Y")
+                {
+                    for (int i = 1; i < argc; i++)
+                    {
+                        rle.Encoder(argv[i]);
+                    }
+                }
+            }
+            else
+            {
+                if (size(v) > 3)
+                    cerr << "[!] There is too many arguments! Omitting... \n";
+                if (size(v) > 1)
+                {
+                    string read, write;
+                    read = v[1];
+                    if (size(v) < 3)
+                    {
+                        cout << "[?] There is no file name to write, use " << read.substr(0, read.find_first_of(".")) << ".rle?(Y(/FILENAME))\n>>> ";
+                        getline(cin, subask);
+                        if (subask == "Y" or subask == "")
+                        {    
+                            write = "";
+                        }
+                        else
+                        {
+                            write = subask;
+                        }
+                    }
+                    else
+                    {
+                        write = v[2];
+                    }
+                    rle.Encoder(read, write);
+                }
+                else
+                {
+                    cerr << "[!] There is no arguments\n";
+                }
             }
         }
-        else if (ask == "2")
+        else if (v[0] == "2")
         {
-            for (int i = 1; i < argc; i++)
+            if (argc > 1)
             {
-                rle.Decoder(argv[i]);
+                cout << "[?] There is " << argc - 1 << " arguments\nWant to use them? (N(/Y))\n>>> ";
+                getline(cin, subask);
+                if (subask == "Y")
+                {
+                    for (int i = 1; i < argc; i++)
+                    {
+                        rle.Decoder(argv[i]);
+                    }
+                }
+            }
+            else
+            {
+                if (size(v) > 3)
+                    cerr << "[!] There is too many arguments! Omitting... \n";
+                if (size(v) > 1)
+                {
+                    string read, write;
+                    read = v[1];
+                    if (size(v) < 3)
+                    {
+                        cout << "[?] There is no file name to write, use " << read.substr(0, read.find_first_of(".")) << "?(Y(/FILENAME))\n>>> ";
+                        getline(cin, subask);
+                        if (subask == "Y")
+                        {    
+                            write = "";
+                        }
+                        else
+                        {
+                            write = subask;
+                        }
+                    }
+                    else
+                    {
+                        write = v[2];
+                    }
+                    rle.Decoder(read, write);
+                }
+                else
+                {
+                    cerr << "[!] There is no arguments\n";
+                }
             }
         }
         else
         {
-            cout << "[!] There is no " << ask << " command\n";
+            cout << "[!] There is no " << v[0] << " command\n";
         }
     }
 }
