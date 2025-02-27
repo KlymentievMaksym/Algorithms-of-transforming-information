@@ -8,3 +8,4 @@ build
 *.fls
 *.log
 *.synctex.gz
+*.toc
