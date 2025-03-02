@@ -52,6 +52,200 @@ class BitSequence
             0x1f, 0x9f, 0x5f, 0xdf, 0x3f, 0xbf, 0x7f, 0xff,
         };
 
+        int Read(fstream &bitstream, vector<uint8_t> &Arr, int BitLength)
+        {
+            uint8_t value;
+            int BITS_READ = 0;
+            // bitset<8> val;
+            bitstream.seekg(FINISHED_BITS_READ/8);
+            cout << "[?] Cursor in file on " << FINISHED_BITS_READ << " bits (" << bitstream.tellg() << " byte)\n";
+            int BitLength_Left, BITS_LEFT, BITS_FREE;
+            while (!bitstream.eof( ) and BITS_READ + 8 < BitLength)
+            {
+                // bitstream.seekg(FINISHED_BITS_READ/8);
+                cout << "Entered NORMAL\n";
+                bitstream.read(reinterpret_cast<char*>(&value), sizeof(value));
+                cout << "[?] Value received: " << bitset<8>(value) << "\n";
+                BITS_READ += 8;
+                FINISHED_BITS_READ += 8;
+            
+                //     int bits_left = bitstream.tellg()*8 - FINISHED_BITS_READ - BitLength;
+                //     int bits_to_use = 8 - bits_left;
+                    
+                //     // string str = bitset<8>(value).to_string();
+                //     // reverse(str.begin(), str.end());
+
+                //     int res = 0;
+                //     for (int i = 0; i < bits_to_use; i++)
+                //     {
+                //         // cout << res << ", " << i << ", " << (2^i) << " | ";
+                //         res += pow(2, i);
+                //     }
+                //     val = bitset<8>(value);
+                //     // Reverse(val);
+                //     // cout << "\n" << bits_to_use << " | " << bits_left << "\n";
+                //     // cout << res << " | " << bitset<8>(res) << " | " << (bitset<8>(res) << bits_left) << " | " << ((bitset<8>(res) << bits_left) & val) << " | " << '\n';
+                //     bitset<8> result = (bitset<8>(res) << bits_left) & val;
+
+                //     // cout << bitstream.tellg()*8 << " | " << value << " | " << bitset<8>(value) << " | " << val << " | " << result << '\n';
+                // }
+                // else
+                // {
+                //     val = bitset<8>(value);
+                //     // Reverse(val);
+                // }
+                // cout << bitset<8>(value) << ' ';
+                Arr.push_back(value);
+                // Arr.push_back(static_cast<uint8_t>(val.to_ulong()));
+                // cout << static_cast<char>(value);
+            }
+            if (!bitstream.eof( ))
+            {
+                cout << "Entered END\n";
+                bitstream.read(reinterpret_cast<char*>(&value), sizeof(value));
+                
+                BITS_LEFT = BitLength - BITS_READ;
+                BITS_FREE = 8 - BITS_LEFT;
+                cout << "[?] Value received: " << bitset<8>(value) << "\n";
+                cout << "[?] BITS LEFT: " << BITS_LEFT << "\n";
+                cout << "[?] BITS FREE: " << BITS_FREE << "\n";
+                value = value & (CreateByte(BITS_LEFT) << BITS_FREE);
+                value = Reverse(value);
+                cout << "[?] Value will use: " << bitset<8>(value) << "\n";
+                FINISHED_BITS_READ += BITS_LEFT;
+                Arr.push_back(value);
+            }
+            // FINISHED_BITS_READ += BitLength;
+            return 0;
+        }
+        // WriteBitSequence(BitStream, a1, 9),
+        int Write(fstream &bitstream, vector<uint8_t> &Arr, int BitLength, bool NeedInfo=false)
+        {
+            uint8_t value;
+            int BITS_WRITE = 0;
+            // bitset<8> val;
+            // bitstream.seekg(FINISHED_BITS_READ/8);
+            // cout << "Cursor in file on " << FINISHED_BITS_READ << " bits (" << bitstream.tellg() << " byte)\n";
+            for (uint8_t it : Arr)
+            {
+                // if (bitstream.tellg()*8 <= BitLength - (BitLength % 8))
+                // cout << '\n' << FINISHED_BITS_WRITE << '\n';
+                
+                if ((FINISHED_BITS_WRITE + 8) % 8 == 0 and BITS_WRITE + 8 < BitLength)
+                {
+                    if (NeedInfo)
+                    {
+                        cout << "ENTERED NORMAL\n";
+                        cout << "[?] Cursor on: " << bitstream.tellg()<< " byte | " << bitstream.tellg()*8 << " bit\n";
+                    }
+                    
+                    bitstream.write(reinterpret_cast<char*>(&it), sizeof(it));
+                    BITS_WRITE += sizeof(it)*8;
+                    FINISHED_BITS_WRITE += sizeof(it)*8;
+                }
+                else
+                {
+                    int BitLength_Left, BITS_LEFT, BITS_FREE;
+                    BitLength_Left = BitLength - BITS_WRITE;
+                    
+                    if (NeedInfo)
+                    {
+                        cout << "ENTERED END\n";
+                        cout << "[?] BitLength Left: " << BitLength_Left << "\n";
+                        cout << "[?] FINISHED_BITS_WRITE: " << FINISHED_BITS_WRITE << " | " << BITS_WRITE << "\n";
+                    }
+                    // BitLength_Left - 
+                    if (BitLength_Left <= 8)
+                    {
+                        BITS_LEFT = BitLength_Left;
+                    }
+                    else
+                    {
+                        BITS_LEFT = (bitstream.tellg()*8 - FINISHED_BITS_WRITE);
+                        // BitLength_Left -= BITS_LEFT;
+                        if (NeedInfo)
+                        {
+                            cout << "[?] Bits left: " << BITS_LEFT << " | " << bitstream.tellg()*8 - FINISHED_BITS_WRITE << "\n";
+                        }
+                        bitstream.seekg(FINISHED_BITS_WRITE/8);
+                        bitstream.read(reinterpret_cast<char*>(&value), sizeof(value));
+                        value = Reverse(value);
+                        // it = Reverse(it);
+                    }
+                    bitstream.seekg(FINISHED_BITS_WRITE/8);
+                    
+                    BITS_FREE = 8 - BITS_LEFT;
+                    int byte_left = 0, byte_free = 0;
+                    byte_left = CreateByte(BITS_LEFT);
+                    byte_free = CreateByte(BITS_FREE) << BITS_LEFT;
+
+                    if (NeedInfo)
+                    {
+                        cout << "[?] Cursor on: " << bitstream.tellg()<< " byte | " << bitstream.tellg()*8 << " bit\n";
+                        cout << "[?] Value received: " << bitset<8>(value) << "\n";
+                        cout << "[?] Byte received: " << bitset<8>(it) << "\n";
+                        cout << "[?] Byte to access left bits: " << bitset<8>(byte_left) << "\n";
+                        cout << "[?] Byte to access free bits: " << bitset<8>(byte_free) << "\n";
+                        cout << "[?] Byte received: " << bitset<8>(Reverse((it & byte_left) << BITS_FREE)) << "\n";
+                    }
+
+                    value = (value) | Reverse((it & byte_left) << BITS_FREE);
+
+                    if (NeedInfo)
+                    {
+                        cout << "[?] Value will use: " << bitset<8>(value) << "\n";
+                    }
+
+                    bitstream.write(reinterpret_cast<char*>(&value), sizeof(value));
+                    // BITS_WRITE += BITS_LEFT;
+                    FINISHED_BITS_WRITE += BITS_LEFT;
+                    if (BitLength_Left-BITS_LEFT > 0)
+                    {
+                        value = (it & byte_free);
+
+                        if (NeedInfo)
+                        {
+                            cout << "[?] Cursor on: " << bitstream.tellg()<< " byte | " << bitstream.tellg()*8 << " bit\n";
+                            cout << "[?] Value for next will use: " << bitset<8>(value) << "\n";
+                        }
+                        bitstream.write(reinterpret_cast<char*>(&value), sizeof(value));
+                        BITS_WRITE += 8;
+                        FINISHED_BITS_WRITE += BITS_FREE;
+                    }
+                }
+                
+
+                // if (FINISHED_BITS_WRITE <= BitLength - (BitLength % 8))
+                // {
+                //     bitstream.write(reinterpret_cast<char*>(&it), sizeof(it));
+                //     FINISHED_BITS_WRITE += sizeof(it)*8;
+                // }
+                // else
+                // {
+                //     // cout << bitset<8>(it & (BitLength % 8 << (8 - BitLength % 8))) << "\n\n\n";
+                //     value = it & (BitLength % 8 << (8 - BitLength % 8));
+                //     bitstream.write(reinterpret_cast<char*>(&value), sizeof(value));
+                //     // val = 
+                // }
+                // bitstream.write(reinterpret_cast<char*>(&it), sizeof(it));
+            }
+            return 0;
+        }
+    private:
+        unsigned char Reverse(unsigned char x)
+        {
+            return reverse_table[x];
+        }
+        int CreateByte(int BitCount)
+        {
+            int byt = 0;
+            for (int i = 0; i < BitCount; i++)
+            {
+                byt += pow(2, i);
+            }
+            return byt;
+        }
+        
         template<size_t N>
         void Reverse(bitset<N> &bitst)
         {
@@ -61,88 +255,6 @@ class BitSequence
                 bitst[i] = bitst[N-i-1];
                 bitst[N-i-1] = t;
             }
-        }
-        int Read(fstream &bitstream, vector<uint8_t> &Arr, int BitLength)
-        {
-            uint8_t value;
-            bitset<8> val;
-            bitstream.seekg(FINISHED_BITS_READ/8);
-            cout << "Cursor in file on " << FINISHED_BITS_READ << " bits (" << bitstream.tellg() << " byte)\n";
-            while (!bitstream.eof( ) and bitstream.tellg()*8 - FINISHED_BITS_READ < BitLength)
-            {
-                bitstream.read(reinterpret_cast<char*>(&value), sizeof(value));
-                if (bitstream.tellg()*8 - FINISHED_BITS_READ >= BitLength)
-                {
-                    int bits_left = bitstream.tellg()*8 - FINISHED_BITS_READ - BitLength;
-                    int bits_to_use = 8 - bits_left;
-                    
-                    // string str = bitset<8>(value).to_string();
-                    // reverse(str.begin(), str.end());
-
-                    int res = 0;
-                    for (int i = 0; i < bits_to_use; i++)
-                    {
-                        // cout << res << ", " << i << ", " << (2^i) << " | ";
-                        res += pow(2, i);
-                    }
-                    val = bitset<8>(value);
-                    // Reverse(val);
-                    // cout << "\n" << bits_to_use << " | " << bits_left << "\n";
-                    // cout << res << " | " << bitset<8>(res) << " | " << (bitset<8>(res) << bits_left) << " | " << ((bitset<8>(res) << bits_left) & val) << " | " << '\n';
-                    bitset<8> result = (bitset<8>(res) << bits_left) & val;
-
-                    // cout << bitstream.tellg()*8 << " | " << value << " | " << bitset<8>(value) << " | " << val << " | " << result << '\n';
-                }
-                else
-                {
-                    val = bitset<8>(value);
-                    // Reverse(val);
-                }
-                // cout << bitset<8>(value) << ' ';
-                Arr.push_back(static_cast<uint8_t>(val.to_ulong()));
-                // cout << static_cast<char>(value);
-            }
-            FINISHED_BITS_READ += BitLength;
-            return 0;
-        }
-        // WriteBitSequence(BitStream, a1, 9),
-        int Write(fstream &bitstream, vector<uint8_t> &Arr, int BitLength)
-        {
-            uint8_t value;
-            // bitset<8> val;
-            // bitstream.seekg(FINISHED_BITS_READ/8);
-            // cout << "Cursor in file on " << FINISHED_BITS_READ << " bits (" << bitstream.tellg() << " byte)\n";
-            for (uint8_t it : Arr)
-            {
-                // if (bitstream.tellg()*8 <= BitLength - (BitLength % 8))
-                // cout << '\n' << FINISHED_BITS_WRITE << '\n';
-                if (FINISHED_BITS_WRITE <= BitLength - (BitLength % 8))
-                {
-                    bitstream.write(reinterpret_cast<char*>(&it), sizeof(it));
-                    FINISHED_BITS_WRITE += sizeof(it)*8;
-                }
-                else
-                {
-                    // cout << bitset<8>(it & (BitLength % 8 << (8 - BitLength % 8))) << "\n\n\n";
-                    value = it & (BitLength % 8 << (8 - BitLength % 8));
-                    bitstream.write(reinterpret_cast<char*>(&value), sizeof(value));
-                    // val = 
-                }
-                // bitstream.write(reinterpret_cast<char*>(&it), sizeof(it));
-            }
-            return 0;
-        }
-    // private:
-        // unsigned char reverse(unsigned char b)
-        // {
-        //     b = (b & 0xF0) >> 4 | (b & 0x0F) << 4;
-        //     b = (b & 0xCC) >> 2 | (b & 0x33) << 2;
-        //     b = (b & 0xAA) >> 1 | (b & 0x55) << 1;
-        //     return b;
-        // }
-        unsigned char reverse(unsigned char x)
-        {
-            return reverse_table[x];
         }
 };
 
@@ -192,10 +304,13 @@ int main(int argc, char* argv[])
     // arr.push_back(0b11100001);
     vector<uint8_t> a1 = {0b11100001, 0b00000001};
     vector<uint8_t> a2 = {0b11101110, 0b00000000};
+    // bs.Write(fr, a1, 9, true);
+    // bs.Write(fr, a2, 9, true);
     bs.Write(fr, a1, 9);
     bs.Write(fr, a2, 9);
     vector<uint8_t> b1, b2;
     bs.Read(fr, b1, 11);
+    // bs.Read(fr, b1, 18);
     bs.Read(fr, b2, 7);
     fr.close();
 
@@ -211,6 +326,8 @@ int main(int argc, char* argv[])
         cout << bitset<8>(byte) << " ";
     }
     cout << dec << endl;
+    cout << "\n" << bitset<8>(0b11100001) << " " << bitset<8>(0b00000101) << "\n";
+    cout << bitset<8>(0b00111011) << "\n";
 
     // cout << bitset<8>(1) << " | " << bitset<8>(bs.reverse(1));
 
