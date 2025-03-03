@@ -54,6 +54,10 @@ class BitSequence
 
         int Read(fstream &bitstream, vector<uint8_t> &Arr, int BitLength, bool NeedInfo=false)
         {
+            if (open(bitstream))
+            {
+                return 1;
+            }
             uint8_t value;
             int BITS_READ = 0;
             bitstream.seekg(FINISHED_BITS_READ/8);
@@ -160,11 +164,15 @@ class BitSequence
         // WriteBitSequence(BitStream, a1, 9),
         int Write(fstream &bitstream, vector<uint8_t> &Arr, int BitLength, bool NeedInfo=false)
         {
+            if (open(bitstream))
+            {
+                return 1;
+            }
             uint8_t value;
             int BITS_WRITE = 0;
             // bitset<8> val;
-            // bitstream.seekg(FINISHED_BITS_READ/8);
-            // cout << "Cursor in file on " << FINISHED_BITS_READ << " bits (" << bitstream.tellg() << " byte)\n";
+            // bitstream.seekg(FINISHED_BITS_WRITE/8);
+            // cout << "Cursor in file on " << FINISHED_BITS_WRITE << " bits (" << bitstream.tellg() << " byte)\n";
             for (uint8_t it : Arr)
             {
                 // if (bitstream.tellg()*8 <= BitLength - (BitLength % 8))
@@ -256,6 +264,28 @@ class BitSequence
             }
             return 0;
         }
+        int open(fstream &bitstream)
+        {
+            if (!bitstream.is_open())
+            {
+                cerr << "[!] Error opening the file!\n";
+                return 1;
+            }
+            return 0;
+        }
+        int close(fstream &bitstream)
+        {
+            FINISHED_BITS_READ = 0;
+            FINISHED_BITS_WRITE = 0;
+            bitstream.close();
+            return 0;
+        }
+        void clear(fstream &bitstream)
+        {
+            FINISHED_BITS_READ = 0;
+            FINISHED_BITS_WRITE = 0;
+            bitstream.seekg(0);
+        }
     private:
         unsigned char Reverse(unsigned char x)
         {
@@ -291,11 +321,7 @@ int main()
     string str = "test.txt";
 
     fstream fr(str, ios::binary | ios::in | ios::out);
-    if (!fr.is_open())
-        {
-            cerr << "[!] Error opening the file '" << str << "'!\n";
-            return 1;
-        }
+
     vector<uint8_t> a1 = {0b11100001, 0b00000001};
     vector<uint8_t> a2 = {0b11101110, 0b00000000};
     vector<uint8_t> b1, b2;
@@ -308,7 +334,7 @@ int main()
     bs.Read(fr, b1, 11);
     bs.Read(fr, b2, 7);
 
-    fr.close();
+    // fr.close();
 
     for (uint8_t byte : b1)
     {
@@ -321,7 +347,32 @@ int main()
     }
     cout << "\n";
     cout << "\n" << bitset<8>(0b11100001) << " " << bitset<8>(0b00000101) << "\n";
-    cout << bitset<8>(0b00111011) << "\n";
+    cout << bitset<8>(0b00111011) << "\n\n-----------------\n\n";
 
+    bs.clear(fr);
+
+    a1 = {0b00000001, 0b01111111};
+    a2 = {0b01111111, 0b00000001};
+    vector<uint8_t> b3, b4;
+
+    bs.Write(fr, a1, 9); // , true
+    bs.Write(fr, a2, 9); // , true
+    bs.Read(fr, b3, 9); // , true
+    bs.Read(fr, b4, 8); // , true
+
+    for (uint8_t byte : b3)
+    {
+        cout << bitset<8>(byte) << " ";
+    }
+    cout << "\n";
+    for (uint8_t byte : b4)
+    {
+        cout << bitset<8>(byte) << " ";
+    }
+    cout << "\n";
+    cout << "\n" << bitset<8>(0b00000001) << " " << bitset<8>(0b00000001) << "\n";
+    cout << bitset<8>(0b11111111) << "\n";
+
+    bs.close(fr);
     return 0;
 }
