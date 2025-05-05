@@ -43,7 +43,7 @@ CT
 Вхiднi данi (input.dat):
 
 ATTCCGATA
-3
+2
 AT
 C
 
