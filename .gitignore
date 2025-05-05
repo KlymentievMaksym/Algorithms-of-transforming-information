@@ -4,6 +4,9 @@
 build
 
 *.aux
+*.bbl
+*.bcf
+*.run.xml
 *.fdb_latexmk
 *.fls
 *.log

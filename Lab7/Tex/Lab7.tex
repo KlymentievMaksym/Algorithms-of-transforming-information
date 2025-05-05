@@ -1,0 +1,89 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[fontsize = 12pt]{fontsize} 
+\usepackage{microtype}
+\usepackage[english, ukrainian]{babel}
+\usepackage[
+    top = 40pt,
+    bottom = 20pt,
+    right = 50pt,
+    left = 50pt
+]{geometry}
+\usepackage{biblatex}
+\usepackage{csquotes}
+\usepackage{mathtools}
+
+\begin{document}
+    \begin{titlepage}
+        \begin{center}
+        $\newline$
+        \vspace{3.3cm}
+        
+        {\LARGE\textbf{Лабораторна робота №7\\"Використання префiксного дерева для розв’язання задачi множинної вiдповiдностi шаблонам"}}
+        \vspace{10cm}
+        \begin{flushright}
+            \textbf{Роботу виконав:}\\Климентьєв Максим \\3-го курсу\\групи ФІ-21
+        \end{flushright}
+        \end{center}
+    \end{titlepage}
+    \newpage
+
+    \pagenumbering{gobble}
+    \tableofcontents
+    \cleardoublepage
+    \pagenumbering{arabic}
+    \setcounter{page}{3}
+    \newpage
+
+    \section{Особливості реалізації}
+    Нижче наведені особливості реалізації:
+    \begin{itemize}
+        \item \textbf{Аби було} --- вивід, які патерни присутні в префіксному дереві (в не дуже зрозумілому мені порядку).
+        \item \textbf{Додавання змінної text} --- аби вивести індекси де починається якийсь префікс.
+        \item \textbf{Додавання ключів key та key\_add до TrieNode} --- аби вивести індекси з якого індексу починається та куди потрапляє певна буква.
+        \item \textbf{Вивід} --- відбувається з кінцевої букви у словнику дітей і йде вивід аж до самої першої дитини. Можна інвертувати, якщо робити stack.pop(0) замість stack.pop()
+    \end{itemize}    
+
+    \section{Приклади}
+    \begin{enumerate}
+        \item $ \text{Вхiднi данi} (input\_1.1.dat):\\
+            1\\
+            CGT\\
+            \text{Вихiднi данi} (output\_1.1.dat):\\
+            0\rightarrow1:C\\
+            1\rightarrow2:G\\
+            2\rightarrow3:T $
+        \item $ \text{Вхiднi данi} (input\_1.2.dat):\\
+            3\\
+            CG\\
+            CC\\
+            CT\\
+            \text{Вихiднi данi} (output\_1.2.dat):\\
+            0\rightarrow1:C\\
+            1\rightarrow2:G\\
+            1\rightarrow3:C\\
+            1\rightarrow4:T $
+        \item $ \text{Вхiднi данi} (input\_2.1.dat):\\
+            CCCC\\
+            1\\
+            CC\\
+            \text{Вихiднi данi} (output\_2.1.dat):\\
+            0\ 1\ 2$
+        \item $ \text{Вхiднi данi} (input\_2.2.dat):\\
+            CCCC\\
+            2\\
+            CG\\
+            CT\\
+            \text{Вихiднi данi} (output\_2.2.dat):\\
+            \\
+            \text{Що є порожнiм файлом.}$
+        \item $ \text{Вхiднi данi} (input\_2.3.dat):\\
+            ATTCCGATA\\
+            2\\
+            AT\\
+            C\\
+            \\
+            \text{Вихiднi данi} (output\_2.3.dat):\\
+            0\ 3\ 4\ 6$
+    \end{enumerate}
+\end{document}
