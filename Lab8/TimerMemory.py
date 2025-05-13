@@ -23,6 +23,6 @@ class TimerMemory:  # pragma: no cover
         peak = peak_in_Mb
         if self.print:
             print(f"[Timer] Executed in {time_passed:.6f} seconds")
-            print(f"[Memory] Used max {peak:.6f} MB")
+            print(f"[Memory] Used max {peak:.6f} Mb")
         self.time = time_passed
         self.peak = peak

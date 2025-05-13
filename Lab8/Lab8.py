@@ -24,7 +24,7 @@ else:
 # print(inputs)
 
 # with TimerMemory(True):
-for input in inputs[:5]:
+for input in inputs[:]:
     if input.startswith("input") and input.endswith(".dat"):
         output = input.replace("in", "out")
         print("[I]", input)
