@@ -39,6 +39,7 @@ for input in inputs[:]:
                     pattern = None
                 print(word, pattern)
                 bw = BerrouzWiller(word, pattern, reverse=False if word[-1] == "$" or "$" not in word else True)
+                bw = bw.run
                 print(bw)
                 with open(path + "/" + output, "w") as f:
                     f.write(str(bw))
