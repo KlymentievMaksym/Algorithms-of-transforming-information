@@ -69,7 +69,7 @@ class TestBerrouzWiller(unittest.TestCase):
     word_large_2_reverse = "A" + "T" * coeff + "G" * coeff + "A" * (coeff - 1) + "$" + "T" * coeff + "C" * coeff + "C" * coeff + "A" * coeff + "T" * coeff + "A" * coeff
 
     coeff = int(2e3)
-    word_large_3 = word_standart[:-1] * coeff + "$"  # 9e3 + 1
+    word_large_3 = word_standart[:-1] * coeff + "$"  # 1.8e4 + 1
 
     pattern = "CG"  # 2
 
