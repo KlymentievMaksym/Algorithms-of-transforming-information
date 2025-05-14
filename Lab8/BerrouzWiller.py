@@ -1,12 +1,20 @@
 import numpy as np
-import copy
+
+
+class NodeR:
+    def __init__(self, name: str = None, next: "Node" = None):
+        self.name = name
+        self.next = next
+
+    def __repr__(self):
+        return f"{self.name}"
+
 
 class Node:
     def __init__(self, key: int, name: str = None, name_end: str = None, next: "Node" = None, prev: "Node" = None):
         self.key = key
         self.name = name
         self.name_end = name_end
-        # self.next = next
         self.prev = prev
 
     def __repr__(self):
@@ -37,28 +45,36 @@ class BerrouzWiller:
 
     @property
     def _reverse(self) -> str:
-        word_needed = ""
         n = len(self.word)
-        if n > 1:
-            word_to_add = list(char for char in self.word)
-            matrix = list(char for char in self.word)
-            matrix.sort()
-            for _ in range(n - 1):
-                for i, char in enumerate(word_to_add):
-                    matrix[i] = char + matrix[i]
-                matrix.sort()
-                print(len(matrix[0]))
+        word_needed = ""
+        if n >= 1:
+            # create connections beetween first and last cols
+            word_rec = [NodeR(char) for char in self.word]  # Slow
+            # print("First")
+            word_start = sorted(word_rec, key=lambda x: x.name)
+            # print("Second")
+            for first, second in zip(word_start, word_rec):
+                first.next = second
+            # print("Connected")
 
-            for word in matrix:
-                if word[-1] == "$":
-                    word_needed = "".join(word)
-                    break
+            # recreate word  # Slow
+            start_node = word_start[0]
+            word_needed += start_node.name
+            node = start_node.next
+            while node != start_node:
+                word_needed += node.name
+                node = node.next
+                # print(len(word_needed))
+            # print("Created")
+            word_needed = word_needed[::-1]
+            # print("Inverted")
         return word_needed
 
     @property
     def _count(self) -> int:
         double_word = self.word * 2
         matrix = [double_word[i:i+len(self.word)] for i in range(len(self.word))]
+        # matrix = [self.word[:i] + self.word[i:] for i in range(len(self.word))]
         matrix_2 = [Node(i, rotation[0], rotation[-1]) for i, rotation in enumerate(matrix)]
         for node_index in range(len(matrix)):
             matrix_2[node_index].prev = matrix_2[(node_index - 1) % len(matrix)]

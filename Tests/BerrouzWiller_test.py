@@ -64,6 +64,13 @@ class TestBerrouzWiller(unittest.TestCase):
     word_large = word_standart[:-1] * coeff + "$"  # 8e3 + 1
     word_large_reverse = "A" + "T" * coeff + "G" * coeff + "A" * (coeff - 1) + "$" + "T" * coeff + "C" * coeff + "C" * coeff + "A" * coeff + "T" * coeff + "A" * coeff
 
+    coeff = int(.25e6)
+    word_large_2 = word_standart[:-1] * coeff + "$"  # 2e6 + 1
+    word_large_2_reverse = "A" + "T" * coeff + "G" * coeff + "A" * (coeff - 1) + "$" + "T" * coeff + "C" * coeff + "C" * coeff + "A" * coeff + "T" * coeff + "A" * coeff
+
+    coeff = int(2e3)
+    word_large_3 = word_standart[:-1] * coeff + "$"  # 9e3 + 1
+
     pattern = "CG"  # 2
 
     def check_time_memory(self, TM, time=2.0, peak=512.0):
@@ -168,16 +175,16 @@ class TestBerrouzWiller(unittest.TestCase):
 
     def test_large_reverse(self):  # Expectation: Word
         with TimerMemory(False) as TM:
-            bw_large_reverse = BerrouzWiller(self.word_large_reverse, reverse=True).run
+            bw_large_reverse = BerrouzWiller(self.word_large_2_reverse, reverse=True).run
 
-            self.assertEqual(str(bw_large_reverse), self.word_large)
+            self.assertEqual(str(bw_large_reverse), self.word_large_2)
         self.check_time_memory(TM, 15.0)
 
-    # def test_large_count(self):  # Expectation: 1e3
-    #     with TimerMemory(False) as TM:
-    #         bw_large_count = BerrouzWiller(self.word_large, self.pattern)
-    #         self.assertEqual(str(bw_large_count), str(int(1e6)))
-    #     self.check_time_memory(TM, 25.0)
+    def test_large_count(self):  # Expectation: 2e3
+        with TimerMemory(False) as TM:
+            bw_large_count = BerrouzWiller(self.word_large_3, self.pattern).run
+            self.assertEqual(str(bw_large_count), str(int(2e3)))
+        self.check_time_memory(TM, 25.0)
 
 
 if __name__ == "__main__":  # pragma: no cover
